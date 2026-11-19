@@ -165,7 +165,9 @@ Set a free VirusTotal API key as the `VT_API_KEY` environment variable. Only fil
 - **Report only.** The agent asks before it deletes, quarantines, stops a program, disables a task, installs software, updates definitions, or uses administrator rights.
 - **No file uploads.** Nothing leaves your computer without your explicit approval. Hash lookups send only the fingerprint.
 - **Snapshots stay local.** Baselines are saved in your user data folder (for example `%LOCALAPPDATA%\device-checkup` on Windows) and never sent anywhere. Set `DEVICE_CHECKUP_DIR` to store them elsewhere.
-- **Verified downloads only.** ClamAV comes only from the official Cisco Talos GitHub release and is checked against its SHA-256 before use. Nothing is bundled in this repo, so you always get the latest patched version.
+- **Verified downloads only.** ClamAV and Loki-RS come only from their official GitHub releases and are checked against their SHA-256 before use. Nothing is bundled in this repo, so you always get the latest patched version.
+
+Found a security problem in the skill itself? Please report it privately; see [SECURITY.md](SECURITY.md).
 - **Scanned content is data, not instructions.** Text inside files, scripts, filenames, or logs cannot give the agent commands.
 - **Suspicious files are never run.**
 - **Honest results.** The skill never says "you are safe". It says what was checked, what was found, and what was not covered.
@@ -185,6 +187,7 @@ Set a free VirusTotal API key as the `VT_API_KEY` environment variable. Only fil
 device-checkup-skill/
 ├── README.md
 ├── AGENTS.md                 # for agents without skill support
+├── SECURITY.md               # how to report vulnerabilities
 ├── LICENSE
 ├── .github/workflows/
 │   └── tests.yml             # CI: Windows, macOS, Linux
