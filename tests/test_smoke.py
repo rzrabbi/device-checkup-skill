@@ -42,10 +42,18 @@ class TestSmoke(unittest.TestCase):
         self.assertIn("clamav", d["engines"])
         self.assertIn("loki", d["engines"])
 
+    def test_loki_info(self):
+        d = run("loki-info", env=self.env)
+        self.assertIn("manual_install", d)
+        self.assertIn("untrusted_data_notice", d)
+
     def test_persistence(self):
         d = run("persistence", env=self.env)
-        for key in ("total", "flagged", "entries", "not_checked"):
+        for key in ("total", "flagged", "entries", "not_checked", "untrusted_data_notice"):
             self.assertIn(key, d)
+        for e in d["entries"]:
+            for field in ("name", "command", "source"):
+                self.assertNotIn("\n", e[field])
         for e in d["entries"]:
             self.assertEqual(set(e), {"kind", "name", "command", "source", "system", "flagged", "reasons"})
 

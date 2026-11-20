@@ -3,7 +3,6 @@ import hashlib
 import io
 import os
 import shutil
-import tarfile
 import tempfile
 import unittest
 import zipfile
@@ -36,38 +35,6 @@ class TestSafeExtract(unittest.TestCase):
         scan.safe_extract(p, self.out)
         self.assertTrue(os.path.isfile(os.path.join(self.out, "tool", "clamscan.exe")))
         self.assertFalse(os.path.exists(os.path.join(self.out, "tool", "clamscan.pdb")))
-
-    def make_tar(self, add):
-        p = os.path.join(self.tmp, "a.tar.gz")
-        with tarfile.open(p, "w:gz") as t:
-            add(t)
-        return p
-
-    def test_tar_traversal_blocked(self):
-        def add(t):
-            ti = tarfile.TarInfo("../escape.txt")
-            ti.size = 1
-            t.addfile(ti, io.BytesIO(b"x"))
-        with self.assertRaises(ValueError):
-            scan.safe_extract_tar(self.make_tar(add), self.out)
-
-    def test_tar_symlink_outside_blocked(self):
-        def add(t):
-            ti = tarfile.TarInfo("link")
-            ti.type = tarfile.SYMTYPE
-            ti.linkname = "/etc/passwd"
-            t.addfile(ti)
-        with self.assertRaises(ValueError):
-            scan.safe_extract_tar(self.make_tar(add), self.out)
-
-    def test_tar_ok(self):
-        def add(t):
-            ti = tarfile.TarInfo("loki/loki")
-            ti.size = 3
-            t.addfile(ti, io.BytesIO(b"bin"))
-        scan.safe_extract_tar(self.make_tar(add), self.out)
-        self.assertTrue(os.path.isfile(os.path.join(self.out, "loki", "loki")))
-
 
 class FakeResponse(io.BytesIO):
     def __enter__(self):

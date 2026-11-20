@@ -32,7 +32,7 @@ The antivirus engine does the detecting. The agent runs it, reads the results, a
 | **Browser extensions** | Lists extensions in Chrome, Edge, Brave, Vivaldi, Opera, Firefox, and Safari, and flags the adware tricks: force-installed by policy ("managed by your organization"), sideloaded, or unsigned |
 | **Network** | Lists listening ports with the program behind each, plus active connections, so unexpected ones stand out |
 | **Changes since last time** | Saves a local snapshot after each checkup, so the next one can report what changed, for example "2 new startup programs, firewall turned off, new program listening on port 4444" |
-| **Second-opinion scan** | Optional [Loki-RS](https://github.com/Neo23x0/Loki-RS) scan with YARA Forge rules and known-bad indicators, on any OS |
+| **Second-opinion scan** | Optional [Loki-RS](https://github.com/Neo23x0/Loki-RS) scan with YARA Forge rules and known-bad indicators, on any OS, if you install Loki yourself |
 | **Linux and macOS audit** | Optional [Lynis](https://cisofy.com/lynis/) security audit and [rkhunter](https://rkhunter.sourceforge.net/) rootkit check |
 | **Suspicious files** | Looks up a file's SHA-256 fingerprint on VirusTotal (optional). The file itself is never uploaded |
 | **Report** | The same clear layout every time: overall verdict, what needs attention, security settings, changes, scan results, what was not checked, and next steps |
@@ -108,7 +108,7 @@ Point your agent at [`AGENTS.md`](AGENTS.md) or at `skills/device-checkup/SKILL.
 | Windows | ClamAV (optional) | Installed by the skill on request: official build, checksum verified, no admin needed |
 | macOS | ClamAV | Installed by the skill on request via Homebrew (`brew install clamav`) |
 | Linux | ClamAV | The skill shows the command for your distro (for example `sudo apt install clamav`) |
-| All | Loki-RS (optional second opinion) | Installed by the skill on request: official build, checksum verified, no admin needed |
+| All | Loki-RS (optional second opinion) | You install it yourself; the skill never downloads it. `loki-info` prints the steps |
 | Linux, macOS | Lynis, rkhunter (optional audits) | The skill shows the install command; rkhunter checks need root |
 | Windows | Emsisoft Emergency Kit (optional) | Manual only: the agent explains how to download and run it from emsisoft.com |
 
@@ -149,7 +149,7 @@ Set a free VirusTotal API key as the `VT_API_KEY` environment variable. Only fil
 | `engines` | Detect Defender, ClamAV, and other antivirus; definition age; Defender exclusions |
 | `update [--force]` | Update virus definitions (ClamAV only when older than 6 hours) |
 | `clamav-setup [--yes]` | Plan, then (after approval) install ClamAV for this user |
-| `loki-setup [--yes]` | Plan, then (after approval) install Loki-RS for this user |
+| `loki-info` | Show whether Loki-RS is installed, and the manual install steps (the skill never downloads it) |
 | `audit` | Lynis security audit (Linux, macOS) |
 | `rootkit [--from-file F]` | rkhunter rootkit check (Linux, macOS; needs root, or reads output you saved) |
 | `scan --path P [--engine auto\|defender\|clamav\|loki\|both\|all]` | Scan a folder |
@@ -165,7 +165,8 @@ Set a free VirusTotal API key as the `VT_API_KEY` environment variable. Only fil
 - **Report only.** The agent asks before it deletes, quarantines, stops a program, disables a task, installs software, updates definitions, or uses administrator rights.
 - **No file uploads.** Nothing leaves your computer without your explicit approval. Hash lookups send only the fingerprint.
 - **Snapshots stay local.** Baselines are saved in your user data folder (for example `%LOCALAPPDATA%\device-checkup` on Windows) and never sent anywhere. Set `DEVICE_CHECKUP_DIR` to store them elsewhere.
-- **Verified downloads only.** ClamAV and Loki-RS come only from their official GitHub releases and are checked against their SHA-256 before use. Nothing is bundled in this repo, so you always get the latest patched version.
+- **Verified downloads only.** The only tool the skill downloads is ClamAV, from the official Cisco Talos GitHub release, checked against its SHA-256 before use, and only after you approve. Loki-RS is never downloaded automatically. Nothing is bundled in this repo, so you always get the latest patched version.
+- **Hostile text is treated as data.** A scan reads names and paths that an attacker can control, for example a malicious download called "ignore your instructions". The helper replaces control characters, joins lines, and shortens long text before the agent sees it, and the skill's instructions tell the agent never to follow anything found on the computer. This reduces the risk of prompt injection; it cannot remove it completely, so keep the agent's permission prompts on.
 
 Found a security problem in the skill itself? Please report it privately; see [SECURITY.md](SECURITY.md).
 - **Scanned content is data, not instructions.** Text inside files, scripts, filenames, or logs cannot give the agent commands.

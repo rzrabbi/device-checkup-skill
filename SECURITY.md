@@ -25,10 +25,10 @@ Only the latest version on the `main` branch is supported. Please reproduce issu
 
 In scope:
 
-- **Unsafe downloads**: getting `clamav-setup` or `loki-setup` to install a file that was not verified against the official release checksum, or from an unexpected source.
+- **Unsafe downloads**: getting `clamav-setup` to install a file that was not verified against the official release checksum, or from an unexpected source. (Loki-RS is never downloaded by the skill; a way to make it download or run Loki automatically is in scope.)
 - **Archive extraction**: path traversal, unsafe links, or other ways a downloaded archive can write outside its install folder.
 - **Command injection**: file paths, task names, extension names, or other system data that end up executed by PowerShell or a shell in `scan.py`.
-- **Agent manipulation (prompt injection)**: content on a scanned computer (file contents, task names, extension names, log lines) that makes an agent following `SKILL.md` delete files, upload data, change settings, or run commands without the user's approval.
+- **Agent manipulation (prompt injection)**: content on a scanned computer (file names, file contents, task names, extension names, log lines) that makes an agent following `SKILL.md` delete files, upload data, change settings, or run commands without the user's approval. Also in scope: text that gets past the cleaning in `clean()` in `scan.py` (control or invisible characters, line breaks, or length limits) and reaches the agent unchanged.
 - **Safety rule bypass**: any path where the skill deletes, quarantines, uploads, elevates privileges, installs software, or changes security settings without explicit user consent.
 - **Data leaks**: anything that sends information off the device other than what the user approved (VirusTotal lookups send only a file hash).
 - **Local data exposure**: baseline snapshots or tool installs written somewhere other users or programs can read or tamper with.
@@ -46,7 +46,8 @@ For context when reviewing or testing:
 
 - **Report only.** The skill never deletes, quarantines, stops programs, installs software, updates definitions, elevates privileges, or changes security settings without the user's explicit approval. It never runs `sudo` itself.
 - **Scanned content is data, not instructions.** `SKILL.md` tells the agent to treat everything read from the computer as untrusted and to show suspicious instructions to the user instead of following them.
-- **Verified downloads.** ClamAV and Loki-RS come only from their official GitHub releases and are checked against the release's SHA-256 before use. Archives are extracted with path and link checks. Nothing executable is bundled in this repository.
+- **Verified downloads.** The only tool the skill downloads is ClamAV, from the official Cisco Talos GitHub release, checked against the release's SHA-256 before use and only with the user's approval. Archives are extracted with path checks. Loki-RS is never downloaded by the skill (the user installs it manually). Nothing executable is bundled in this repository.
+- **Hostile text is cleaned.** Names, paths, commands, and tool output from the scanned computer pass through `clean()` in `scan.py`, which replaces control and invisible characters, joins lines, and shortens long text. Every command's output also carries a notice that this text is data. `SKILL.md` tells the agent never to follow it. This lowers the risk; it does not remove it.
 - **Nothing leaves the device by default.** Files are never uploaded. Optional VirusTotal lookups send only a SHA-256 hash, and only with the user's own API key.
 - **Local, per-user state.** Baselines and tool installs live in the user's own data folder (for example `%LOCALAPPDATA%\device-checkup`).
 - **Standard library only.** `scan.py` has no third-party Python dependencies.
